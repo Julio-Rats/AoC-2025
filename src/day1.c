@@ -30,19 +30,21 @@ int main(int argc, char *argv[])
 
     while(fgets(line, BUFFER_SIZE, file_in) != NULL)
     {
+        old_position = position;
         offset = (unsigned)atoi(&line[1]);
         pass_zero += offset / 100;
-        if (offset % 100 == 0)
+
+        if ((offset = offset % 100) == 0)
         {
             if (position == 0)
                 set_zero++;
             continue;
         }
-        old_position = position;
+
         if (line[0] == 'L')
-            position -= offset % 100;
+            position -= offset;
         else if (line[0] == 'R')
-            position += offset % 100;
+            position += offset;
 
         if (old_position != 0 && (position >= 100 || position <= 0))
             pass_zero++;
