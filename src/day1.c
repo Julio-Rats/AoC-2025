@@ -1,0 +1,60 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define START_POSITION      50
+#define BUFFER_SIZE         256
+#define INPUT_FILE         "../Inputs/day1.txt"
+
+
+int main(int argc, char *argv[])
+{
+    FILE* file_in;
+
+    if (argc == 1)
+        file_in = fopen(INPUT_FILE, "r");
+    else
+        file_in = fopen(argv[1], "r");
+
+    if (file_in == NULL)
+    {
+        printf("Error opening file '%s'.\n", argc == 1 ? INPUT_FILE : argv[1]);
+        return 1;
+    }
+
+    int old_position, position = START_POSITION;
+    unsigned int pass_zero = 0;
+    unsigned int set_zero  = 0;
+    unsigned int offset;
+    char line[BUFFER_SIZE];
+
+    while(fgets(line, BUFFER_SIZE, file_in) != NULL)
+    {
+        offset = (unsigned)atoi(&line[1]);
+        pass_zero += offset / 100;
+        if (offset % 100 == 0)
+        {
+            if (position == 0)
+                set_zero++;
+            continue;
+        }
+        old_position = position;
+        if (line[0] == 'L')
+            position -= offset % 100;
+        else if (line[0] == 'R')
+            position += offset % 100;
+
+        if (old_position != 0 && (position >= 100 || position <= 0))
+            pass_zero++;
+        
+        position = (position + 100) % 100;
+        if (position == 0)
+            set_zero++;
+    }
+
+    printf("[First Answer]  Number of times stop in zero: %u\n", set_zero);
+    printf("[Second Answer] Number of times pass through zero plus stop in zero %u\n", pass_zero);
+
+    fclose(file_in);
+    return 0;
+}
