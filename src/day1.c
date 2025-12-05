@@ -3,7 +3,7 @@
 #include <string.h>
 
 #define START_POSITION      50
-#define BUFFER_SIZE         256
+#define BUFFER_SIZE         16
 #define INPUT_FILE         "../Inputs/day1.txt"
 
 
