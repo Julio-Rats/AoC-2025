@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
         if (matrix_len >= matrix_cap)
         {
             matrix_cap = matrix_cap ? matrix_cap * 2 : ALLOC_SIZE;
-            matrix_input = (char **)realloc(matrix_input, sizeof(char *) * matrix_cap);
+            matrix_input = (char **)realloc(matrix_input, sizeof *matrix_input * matrix_cap);
             if (matrix_input == NULL)
             {
                 perror("Realloc");
@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
             }
         }
 
-        char *new_string = (char *)malloc(sizeof(char) * line_len);
+        char *new_string = (char *)malloc(sizeof *new_string * line_len);
         if (new_string == NULL)
         {
             perror("Malloc");
