@@ -9,12 +9,7 @@ typedef unsigned long long ull;
 
 int main(int argc, char *argv[])
 {
-    FILE *file_in;
-
-    if (argc == 1)
-        file_in = fopen(INPUT_FILE, "r");
-    else
-        file_in = fopen(argv[1], "r");
+    FILE *file_in = (argc == 1) ? fopen(INPUT_FILE, "r") : fopen(argv[1], "r");
 
     if (file_in == NULL)
     {

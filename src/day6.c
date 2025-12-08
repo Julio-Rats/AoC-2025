@@ -3,20 +3,15 @@
 #include <string.h>
 
 #define BUFFER_SIZE     4096
+#define MATRIX_LINES    5
 #define NUMBER_SIZE     9
-#define ALLOC_SIZE      8
 #define INPUT_FILE      "../Inputs/day6.txt"
 
 typedef unsigned long long ull;
 
 int main(int argc, char *argv[])
 {
-    FILE *file_in;
-
-    if (argc == 1)
-        file_in = fopen(INPUT_FILE, "r");
-    else
-        file_in = fopen(argv[1], "r");
+    FILE *file_in = (argc == 1) ? fopen(INPUT_FILE, "r") : fopen(argv[1], "r");
 
     if (file_in == NULL)
     {
@@ -25,10 +20,8 @@ int main(int argc, char *argv[])
     }
 
     char line[BUFFER_SIZE];
-    char **matrix_input = NULL;
-    size_t matrix_len = 0;
-    size_t matrix_cap = 0;
-    size_t line_len;
+    char matrix_input[MATRIX_LINES][BUFFER_SIZE];
+    size_t line_len, matrix_len = 0;
 
     while (fgets(line, BUFFER_SIZE, file_in) != NULL)
     {
@@ -38,25 +31,7 @@ int main(int argc, char *argv[])
             line[--line_len] = '\0';
         line_len++;
 
-        if (matrix_len >= matrix_cap)
-        {
-            matrix_cap = matrix_cap ? matrix_cap * 2 : ALLOC_SIZE;
-            matrix_input = (char **)realloc(matrix_input, sizeof *matrix_input * matrix_cap);
-            if (matrix_input == NULL)
-            {
-                perror("Realloc");
-                exit(1);
-            }
-        }
-
-        char *new_string = (char *)malloc(sizeof *new_string * line_len);
-        if (new_string == NULL)
-        {
-            perror("Malloc");
-            exit(1);
-        }
-        matrix_input[matrix_len++] = new_string;
-        memcpy(new_string, line, line_len);
+        memcpy(matrix_input[matrix_len++], line, line_len);
     }
 
     ull honzt_total = 0;
@@ -86,32 +61,30 @@ int main(int argc, char *argv[])
             {
                 matrix_input[k][i] = '\0';
                 size_t number;
-                sscanf(&matrix_input[k][last], "%zu", &number);
+                if (sscanf(&matrix_input[k][last], "%zu", &number) != 1)
+                {
+                    fprintf(stderr, "Bad line: %s", line);
+                    continue;
+                }
                 if (k == 0)
                     acc = number;
                 else
                     switch (matrix_input[matrix_len - 1][last])
                     {
-                    case '*':
-                        acc *= number;
-                        break;
-                    case '+':
-                        acc += number;
-                        break;
-                    default:
-                        printf("Operation not defined '%c'\n", matrix_input[matrix_len - 1][last]);
-                        exit(3);
+                    case '*': acc *= number; break;
+                    case '+': acc += number; break;
                     }
                 matrix_input[k][i] = '@';
             }
             honzt_total += acc;
-            vert_total += acc_vert;
+            vert_total  += acc_vert;
             last = i + 1;
         }
         else
         {
-            for (size_t j = 0; j < matrix_len - 1; j++)
+            for (size_t j = 0; j + 1 < matrix_len; j++)
                 vert_str[count_number][j] = matrix_input[j][i];
+
             vert_str[count_number][matrix_len - 1] = '\0';
             size_t number_vert;
             sscanf(vert_str[count_number], "%zu", &number_vert);
@@ -121,26 +94,14 @@ int main(int argc, char *argv[])
             else
                 switch (matrix_input[matrix_len - 1][last])
                 {
-                case '*':
-                    acc_vert *= number_vert;
-                    break;
-                case '+':
-                    acc_vert += number_vert;
-                    break;
-                default:
-                    printf("Operation not defined '%c'\n", matrix_input[matrix_len - 1][last]);
-                    exit(3);
+                case '*': acc_vert *= number_vert; break;
+                case '+': acc_vert += number_vert; break;
                 }
         }
     }
 
-    printf("[First answer]  Total: %llu\n", honzt_total);
-    printf("[Second answer] Total: %llu\n", vert_total);
-
-    for (size_t i = 0; i < matrix_len; i++)
-        free(matrix_input[i]);
-
-    free(matrix_input);
+    printf("[First  answer] Total %llu\n", honzt_total);
+    printf("[Second answer] Total %llu\n", vert_total);
 
     fclose(file_in);
     return 0;

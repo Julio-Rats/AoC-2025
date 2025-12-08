@@ -6,15 +6,9 @@
 #define BUFFER_SIZE         16
 #define INPUT_FILE         "../Inputs/day1.txt"
 
-
 int main(int argc, char *argv[])
 {
-    FILE* file_in;
-
-    if (argc == 1)
-        file_in = fopen(INPUT_FILE, "r");
-    else
-        file_in = fopen(argv[1], "r");
+    FILE *file_in = (argc == 1) ? fopen(INPUT_FILE, "r") : fopen(argv[1], "r");
 
     if (file_in == NULL)
     {
@@ -23,9 +17,9 @@ int main(int argc, char *argv[])
     }
 
     int old_position, position = START_POSITION;
-    unsigned int pass_zero = 0;
-    unsigned int set_zero  = 0;
-    unsigned int offset;
+    size_t pass_zero = 0;
+    size_t set_zero  = 0;
+    size_t offset;
     char line[BUFFER_SIZE];
 
     while(fgets(line, BUFFER_SIZE, file_in) != NULL)
@@ -41,10 +35,7 @@ int main(int argc, char *argv[])
             continue;
         }
 
-        if (line[0] == 'L')
-            position -= offset;
-        else if (line[0] == 'R')
-            position += offset;
+        position += (line[0] == 'L') ? -offset : offset;
 
         if (old_position != 0 && (position >= 100 || position <= 0))
             pass_zero++;
@@ -54,8 +45,8 @@ int main(int argc, char *argv[])
             set_zero++;
     }
 
-    printf("[First Answer]  Number of times stop in zero: %u\n", set_zero);
-    printf("[Second Answer] Number of times pass through zero plus stop in zero %u\n", pass_zero);
+    printf("[First  Answer] Number of times stop in zero                        %zu\n", set_zero);
+    printf("[Second Answer] Number of times pass through zero plus stop in zero %zu\n", pass_zero);
 
     fclose(file_in);
     return 0;

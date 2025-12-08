@@ -18,17 +18,13 @@ struct range
     ull upper;
     char disregarded;
     range_t *next;
+    range_t *prev;
 };
 
 
 int main(int argc, char *argv[])
 {
-    FILE *file_in;
-
-    if (argc == 1)
-        file_in = fopen(INPUT_FILE, "r");
-    else
-        file_in = fopen(argv[1], "r");
+    FILE *file_in = (argc == 1) ? fopen(INPUT_FILE, "r") : fopen(argv[1], "r");
 
     if (file_in == NULL)
     {
@@ -42,11 +38,14 @@ int main(int argc, char *argv[])
     // Make ranges
     while (fgets(line, BUFFER_SIZE, file_in) != NULL)
     {
-        if (line[0] == '\n')
-            break;
+        if (*line == '\n') break;
 
         ull lower, upper;
-        sscanf(line, "%llu-%llu", &lower, &upper);
+        if (sscanf(line, "%llu-%llu", &lower, &upper) != 2)
+        {
+            fprintf(stderr, "Bad line: %s", line);
+            continue;
+        }
         range_t *new_range = (range_t *)malloc(sizeof *new_range);
         if (new_range == NULL)
         {
@@ -57,6 +56,9 @@ int main(int argc, char *argv[])
         new_range->upper = upper;
         new_range->disregarded = 0;
         new_range->next = ranges;
+        new_range->prev = NULL;
+        if (ranges != NULL)
+            ranges->prev = new_range;
         ranges = new_range;
     }
 
@@ -73,10 +75,22 @@ int main(int argc, char *argv[])
                 next->lower = MIN(r->lower, next->lower);
                 next->upper = MAX(r->upper, next->upper);
                 r->disregarded = 1;
+                continue;
             }
             next = next->next;
         }
+        range_t *aux = r;
         r = r->next;
+        if (aux->disregarded != 0)
+        {
+            if (r != NULL)
+                r->prev = aux->prev;
+            if (aux->prev != NULL)
+                aux->prev->next = r;
+            if (ranges == aux)
+                ranges = r;
+            free(aux);
+        }
     }
 
     ull available_ids = 0;
@@ -84,7 +98,11 @@ int main(int argc, char *argv[])
     while (fgets(line, BUFFER_SIZE, file_in) != NULL)
     {
         ull id;
-        sscanf(line, "%llu", &id);
+        if (sscanf(line, "%llu", &id) != 1)
+        {
+            fprintf(stderr, "Bad line: %s", line);
+            continue;
+        }
         r = ranges;
         while (r != NULL)
         {
@@ -102,16 +120,15 @@ int main(int argc, char *argv[])
     r = ranges;
     while (r != NULL)
     {
-        if (r->disregarded == 0)
-            total_available_ids += r->upper - r->lower + 1;
+        total_available_ids += r->upper - r->lower + 1;
 
         range_t *aux = r;
         r = r->next;
         free(aux);
     }
 
-    printf("[First answer]  Total Ids Available: %llu\n", available_ids);
-    printf("[Second answer] Total Ids Available: %llu\n", total_available_ids);
+    printf("[First  answer] Total Ids Available %llu\n", available_ids);
+    printf("[Second answer] Total Ids Available %llu\n", total_available_ids);
 
     fclose(file_in);
     return 0;

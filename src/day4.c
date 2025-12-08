@@ -8,59 +8,54 @@
 
 size_t get_roll_acess(char **roll_matrix, size_t m, size_t n)
 {
-    // make Backup
-    char aux_remove[m][n];
-    for (size_t i = 0; i < m; i++)
-        memcpy(aux_remove[i], roll_matrix[i], sizeof **roll_matrix * n);
+    if (!roll_matrix || m == 0 || n == 0)
+        return 0;
 
-    size_t total_roll = 0;
-    for (size_t i = 0; i < m; i++)
-    {
-        for (size_t j = 0; j < n; j++)
-            if (roll_matrix[i][j] == '@')
-            {
-                size_t count_roll = 0;
-                // check same line
-                if (j != 0)
-                    count_roll += roll_matrix[i][j - 1] == '@' ? 1 : 0;
-                if (j + 1 != m)
-                    count_roll += roll_matrix[i][j + 1] == '@' ? 1 : 0;
-                // check the next and back lines
-                size_t start = j     != 0 ? j - 1 : 0;
-                size_t end   = j + 1 != m ? j + 1 : m - 1;
-                // back line exist
-                if (i != 0)
-                    for (size_t k = start; k <= end; k++)
-                        count_roll += roll_matrix[i - 1][k] == '@' ? 1 : 0;
-                if (count_roll > 3)
-                    continue;
-                // next line exist
-                if (i + 1 != m)
-                    for (size_t k = start; k <= end; k++)
-                        count_roll += roll_matrix[i + 1][k] == '@' ? 1 : 0;
+    char *aux = malloc(m * n);
+    if (!aux)
+        return 0;
 
-                if (count_roll < 4)
+    for (size_t i = 0; i < m; ++i)
+        memcpy(aux + i * n, roll_matrix[i], n);
+
+    size_t total_removed = 0;
+
+    for (size_t i = 0; i < m; ++i)
+        for (size_t j = 0; j < n; ++j)
+        {
+            if (roll_matrix[i][j] != '@')
+                continue;
+
+            size_t neighbors = 0;
+            for (int di = -1; di <= 1; ++di)
+                for (int dj = -1; dj <= 1; ++dj)
                 {
-                    aux_remove[i][j] = '.';
-                    total_roll++;
-                }
-            }
-    }
-    // transfer the removed matrix to the original matrix
-    for (size_t i = 0; i < m; i++)
-        memcpy(roll_matrix[i], aux_remove[i], sizeof(char) * n);
+                    if (di == 0 && dj == 0)
+                        continue;
 
-    return total_roll;
+                    int ni = (int)i + di;
+                    int nj = (int)j + dj;
+                    if (ni >= 0 && ni < (int)m && nj >= 0 && nj < (int)n)
+                        if (roll_matrix[ni][nj] == '@')
+                            neighbors++;
+                }
+            if (neighbors < 4)
+            {
+                aux[i * n + j] = '.';
+                total_removed++;
+            }
+        }
+
+    for (size_t i = 0; i < m; ++i)
+        memcpy(roll_matrix[i], aux + i * n, n);
+
+    free(aux);
+    return total_removed;
 }
 
 int main(int argc, char *argv[])
 {
-    FILE *file_in;
-
-    if (argc == 1)
-        file_in = fopen(INPUT_FILE, "r");
-    else
-        file_in = fopen(argv[1], "r");
+    FILE *file_in = (argc == 1) ? fopen(INPUT_FILE, "r") : fopen(argv[1], "r");
 
     if (file_in == NULL)
     {
@@ -69,9 +64,9 @@ int main(int argc, char *argv[])
     }
 
     char line[BUFFER_SIZE];
-    size_t matrix_cap = 0;
-    size_t matrix_len = 0;
-    size_t line_len = 0;
+    size_t matrix_cap  = 0;
+    size_t matrix_len  = 0;
+    size_t line_len    = 0;
     char **roll_matrix = NULL;
 
     while (fgets(line, BUFFER_SIZE, file_in) != NULL)
@@ -88,7 +83,6 @@ int main(int argc, char *argv[])
         {
             // Realloc for more spaces (exponential increase)
             matrix_cap = matrix_cap ? matrix_cap * 2 : ALLOC_SIZE;
-            ;
             roll_matrix = (char **)realloc(roll_matrix, sizeof *roll_matrix * matrix_cap);
             if (roll_matrix == NULL)
             {
@@ -108,6 +102,7 @@ int main(int argc, char *argv[])
         // Copy string to matrix of strings
         memcpy(string_matrix, line, sizeof *string_matrix * line_len);
     }
+    fclose(file_in);
 
     // Get results
     size_t first_rolls = get_roll_acess(roll_matrix, matrix_len, line_len);
@@ -117,13 +112,12 @@ int main(int argc, char *argv[])
     while ((next_rolls = get_roll_acess(roll_matrix, matrix_len, line_len)) != 0)
         total_rolls += next_rolls;
 
-    printf("[First Answer]  First rolls moved:    %u\n", first_rolls);
-    printf("[Second Answer] Total of rolls moved: %u\n", total_rolls);
+    printf("[First  Answer] First rolls moved    %u\n", first_rolls);
+    printf("[Second Answer] Total of rolls moved %u\n", total_rolls);
 
     for (size_t i = 0; i < matrix_len; i++)
         free(roll_matrix[i]);
     free(roll_matrix);
 
-    fclose(file_in);
     return 0;
 }

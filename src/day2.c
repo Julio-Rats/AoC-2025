@@ -6,15 +6,11 @@
 #define NUMBER_SIZE         32
 #define INPUT_FILE         "../Inputs/day2.txt"
 
+typedef unsigned long long ull;
 
 int main(int argc, char *argv[])
 {
-    FILE* file_in;
-
-    if (argc == 1)
-        file_in = fopen(INPUT_FILE, "r");
-    else
-        file_in = fopen(argv[1], "r");
+    FILE *file_in = (argc == 1) ? fopen(INPUT_FILE, "r") : fopen(argv[1], "r");
 
     if (file_in == NULL)
     {
@@ -22,18 +18,22 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    unsigned long long start, end;
     char line[BUFFER_SIZE], number[NUMBER_SIZE];
-    unsigned long long half_equal  = 0;
-    unsigned long long pattern_mix = 0;
-
+    ull half_equal  = 0;
+    ull pattern_mix = 0;
+    ull start, end;
+    
     while(fgets(line, BUFFER_SIZE, file_in) != NULL)
     {
         char* token = strtok(line, ",");
         do
         {
-            sscanf(token, "%llu-%llu", &start, &end);
-            for (unsigned long long i = start; i <= end; i++)
+            if (sscanf(token, "%llu-%llu", &start, &end) != 2)
+            {
+                fprintf(stderr, "Bad line: %s", line);
+                continue;
+             }
+            for (ull i = start; i <= end; i++)
             {
                 size_t number_len = snprintf(number, sizeof(number), "%llu", i);
                 size_t pattern_len = 1;
@@ -61,11 +61,11 @@ int main(int argc, char *argv[])
                     pattern_len++;
                 }
             }
-        }while ((token = strtok(NULL, ",")) != NULL);
+        } while ((token = strtok(NULL, ",")) != NULL);
     }
 
-    printf("[First Answer] Total sum of all half-equal dual numbers: %llu\n", half_equal);
-    printf("[Second Answer] Total sum of all dual numbers: %llu\n", pattern_mix);
+    printf("[First  Answer] Total sum of all half-equal dual numbers %llu\n", half_equal);
+    printf("[Second Answer] Total sum of all dual numbers            %llu\n", pattern_mix);
 
     fclose(file_in);
     return 0;

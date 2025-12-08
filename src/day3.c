@@ -39,12 +39,7 @@ ull get_max_joltage(char *line, size_t line_len, size_t num_batteries)
 
 int main(int argc, char *argv[])
 {
-    FILE *file_in;
-
-    if (argc == 1)
-        file_in = fopen(INPUT_FILE, "r");
-    else
-        file_in = fopen(argv[1], "r");
+    FILE *file_in = (argc == 1) ? fopen(INPUT_FILE, "r") : fopen(argv[1], "r");
 
     if (file_in == NULL)
     {
@@ -67,8 +62,8 @@ int main(int argc, char *argv[])
         twelve_batts += get_max_joltage(line, line_len, 12);
     }
 
-    printf("[First Answer]  Total of choques for  2 batts: %llu\n", twice_batts);
-    printf("[Second Answer] Total of choques for 12 batts: %llu\n", twelve_batts);
+    printf("[First  Answer] Total of choques for  2 batts %llu\n", twice_batts);
+    printf("[Second Answer] Total of choques for 12 batts %llu\n", twelve_batts);
 
     fclose(file_in);
     return 0;
