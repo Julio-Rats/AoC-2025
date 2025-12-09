@@ -3,7 +3,6 @@
 #include <string.h>
 
 #define BUFFER_SIZE     64
-#define HEAP_ALLOC      1024
 #define K_PAR           1000
 #define INPUT_FILE      "../Inputs/day8.txt"
 
@@ -12,6 +11,7 @@
 
 typedef unsigned long long  ull;
 typedef struct pont         point_t;
+typedef struct dist         dist_t;
 
 struct pont
 {
@@ -21,30 +21,64 @@ struct pont
     size_t size;
 };
 
-typedef struct
+struct dist
 {
     point_t *p1;
     point_t *p2;
+    dist_t  *next;
     ull distance;
-} dist_t;
+};
 
-void dist_push(dist_t **distances, size_t *n, size_t *cap, dist_t dist)
+/* Merge Sorted Functions */
+dist_t *merge_sorted(dist_t *a, dist_t *b)
 {
-    if (*n >= *cap)
+    dist_t dummy;
+    dist_t *p = &dummy;
+    while (a && b)
     {
-        *cap = *cap ? *cap * 2 : HEAP_ALLOC;
-        *distances = realloc(*distances, sizeof **distances * *cap);
-        if (*distances == NULL)
-        {
-            perror("realloc");
-            exit(1);
+        if (a->distance <= b->distance)
+        { // <= mantém estabilidade
+            p->next = a;
+            a = a->next;
         }
+        else
+        {
+            p->next = b;
+            b = b->next;
+        }
+        p = p->next;
     }
-    (*distances)[(*n)++] = dist;
+    p->next = a ? a : b;
+    return dummy.next;
+}
+
+dist_t *split_in_half(dist_t *head)
+{
+    if (!head)
+        return NULL;
+    dist_t *slow = head, *fast = head->next;
+    while (fast && fast->next)
+    {
+        slow = slow->next;
+        fast = fast->next->next;
+    }
+    dist_t *mid = slow->next;
+    slow->next = NULL;
+    return mid;
+}
+
+dist_t *mergesort_rec(dist_t *head)
+{
+    if (!head || !head->next)
+        return head;
+    dist_t *mid   = split_in_half(head);
+    dist_t *left  = mergesort_rec(head);
+    dist_t *right = mergesort_rec(mid);
+    return merge_sorted(left, right);
 }
 
 /* --- DSU (pointer-based) --- */
-point_t *dsu_find(point_t *p)
+inline point_t *dsu_find(point_t *p)
 {
     point_t *root = p;
     while (root->parent != root)
@@ -59,8 +93,8 @@ point_t *dsu_find(point_t *p)
     return root;
 }
 
-/* union by size, assumes inputs may be any nodes (we call find inside) */
-void dsu_union(point_t *a, point_t *b)
+/* Union by size, assumes inputs may be any dist_ts (we call find inside) */
+inline void dsu_union(point_t *a, point_t *b)
 {
     point_t *ra = dsu_find(a);
     point_t *rb = dsu_find(b);
@@ -69,12 +103,12 @@ void dsu_union(point_t *a, point_t *b)
     if (ra->size < rb->size)
     {
         ra->parent = rb;
-        rb->size += ra->size;
+        rb->size  += ra->size;
     }
     else
     {
         rb->parent = ra;
-        ra->size += rb->size;
+        ra->size  += rb->size;
     }
 }
 
@@ -85,7 +119,6 @@ int cmp_dist(const void *A, const void *B)
     const dist_t *b = (dist_t *)B;
     return (a->distance > b->distance) ? 1 : ((a->distance < b->distance) ? -1 : 0);
 }
-
 
 int main(int argc, char *argv[])
 {
@@ -99,7 +132,6 @@ int main(int argc, char *argv[])
     char line[BUFFER_SIZE];
     dist_t *distances = NULL;
     point_t *points   = NULL;
-    size_t dist_cap   = 0;
     size_t dist_len   = 0;
     size_t points_len = 0;
 
@@ -107,7 +139,7 @@ int main(int argc, char *argv[])
     while (fgets(line, BUFFER_SIZE, file_in) != NULL)
     {
         point_t *new_point = malloc(sizeof *new_point);
-        if (!new_point)
+        if (new_point == NULL)
         {
             perror("malloc");
             exit(1);
@@ -132,11 +164,18 @@ int main(int argc, char *argv[])
             ull dx = (ull)(MAX(new_point->x, other->x) - MIN(new_point->x, other->x));
             ull dy = (ull)(MAX(new_point->y, other->y) - MIN(new_point->y, other->y));
             ull dz = (ull)(MAX(new_point->z, other->z) - MIN(new_point->z, other->z));
-            dist_t dist;
-            dist.p1 = new_point;
-            dist.p2 = other;
-            dist.distance = dx * dx + dy * dy + dz * dz;
-            dist_push(&distances, &dist_len, &dist_cap, dist);
+            dist_t *new_dist = malloc(sizeof *new_point);
+            if (new_dist == NULL)
+            {
+                perror("malloc");
+                exit(1);
+            }
+            dist_len++;
+            new_dist->p1 = new_point;
+            new_dist->p2 = other;
+            new_dist->next = distances;
+            new_dist->distance = dx * dx + dy * dy + dz * dz;
+            distances = new_dist;
         }
     }
     fclose(file_in);
@@ -144,31 +183,28 @@ int main(int argc, char *argv[])
     if (points_len == 0)
     {
         fprintf(stderr, "No points read.\n");
-        if (distances != NULL)
-            free(distances);
         return 1;
     }
 
-    qsort(distances, dist_len, sizeof *distances, cmp_dist);
+    distances = mergesort_rec(distances);
 
     size_t k_par_used  = dist_len > (size_t)K_PAR ? (size_t)K_PAR : dist_len;
-    size_t components  = points_len;
     char printed_part1 = 0;
     ull last_x_product = 0;
 
-    for (size_t i = 0; i < dist_len; ++i)
+    for (dist_t *d = distances; d != NULL; d = d->next)
     {
-        point_t *r1 = dsu_find(distances[i].p1);
-        point_t *r2 = dsu_find(distances[i].p2);
+        point_t *r1 = dsu_find(d->p1);
+        point_t *r2 = dsu_find(d->p2);
 
         if (r1 != r2)
         {
             dsu_union(r1, r2);
-            components--;
+            points_len--;
         }
 
         /* after processing the edge i (0-based), if we've just processed K_PAR edges, print part1 */
-        if (!printed_part1 && i + 1 >= k_par_used)
+        if (!printed_part1 && !k_par_used--)
         {
             /* scan roots and pick top-3 sizes (O(n), done only once) */
             size_t max[3] = {0};
@@ -178,10 +214,10 @@ int main(int argc, char *argv[])
                     continue;
                 size_t s = p->size;
                 for (size_t i = 0; i < 3; i++)
-                    if (s > max[i]) 
+                    if (s > max[i])
                     {
                         for (size_t j = 2; j > i; j--)
-                            max[j] = max[j-1];
+                            max[j] = max[j - 1];
                         max[i] = s;
                         break;
                     }
@@ -194,16 +230,22 @@ int main(int argc, char *argv[])
         }
 
         /* check if this union just made everything connected */
-        if (components == 1)
+        if (points_len == 1)
         {
-            /* edges[i] is the edge whose union made components==1 (if union happened) */
-            last_x_product = (ull)distances[i].p1->x * (ull)distances[i].p2->x;
+            /* edges[i] is the edge whose union made points_len==1 (if union happened) */
+            last_x_product = (ull)d->p1->x * (ull)d->p2->x;
             printf("[Second answer] Product of last connection %llu\n", last_x_product);
             break;
         }
     }
 
-    free(distances);
+    /* Coding best practices - Optional */
+    while (distances != NULL)
+    {
+        dist_t *aux = distances;
+        distances = distances->next;
+        free(aux);
+    }
     while (points != NULL)
     {
         point_t *aux = points;
