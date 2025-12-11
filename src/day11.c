@@ -17,16 +17,16 @@ typedef struct
 uint64_t count_paths(uint8_t graph[MAX_NODES][MAX_NODES], uint16_t graph_len, uint16_t start_idx,
                      uint16_t end_idx, uint16_t req1_idx, uint16_t req2_idx)
 {
-    int16_t num_conx[MAX_NODES] = {0};
+    int16_t degree_in[MAX_NODES] = {0};
     for (uint16_t i = 0; i < graph_len; i++)
         for (uint16_t j = 0; j < graph_len; j++)
             if (graph[i][j])
-                num_conx[j]++;
+                degree_in[j]++;
 
     uint16_t queue[graph_len], topo[graph_len];
     uint16_t queue_head = 0, queue_tail = 0, topo_len = 0;
     for (uint16_t i = 0; i < graph_len; i++)
-        if (num_conx[i] == 0)
+        if (degree_in[i] == 0)
             queue[queue_tail++] = i;
 
     while (queue_head < queue_tail)
@@ -34,7 +34,7 @@ uint64_t count_paths(uint8_t graph[MAX_NODES][MAX_NODES], uint16_t graph_len, ui
         uint16_t aux = queue[queue_head++];
         topo[topo_len++] = aux;
         for (uint16_t j = 0; j < graph_len; j++)
-            if (graph[aux][j] && --num_conx[j] == 0)
+            if (graph[aux][j] && --degree_in[j] == 0)
                 queue[queue_tail++] = j;
     }
 

@@ -4,7 +4,7 @@
 
 #define BUFFER_SIZE     256
 #define MAX_POINTS      512
-#define INPUT_FILE      "../Inputs/day9.txt"
+#define INPUT_FILE      "../Inputs/day09.txt"
 
 #define MIN(a, b)       ((a) < (b) ? (a) : (b))
 #define MAX(a, b)       ((a) > (b) ? (a) : (b))

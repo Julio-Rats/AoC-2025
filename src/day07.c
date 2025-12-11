@@ -3,7 +3,7 @@
 #include <string.h>
 
 #define BUFFER_SIZE     256
-#define INPUT_FILE      "../Inputs/day7.txt"
+#define INPUT_FILE      "../Inputs/day07.txt"
 
 typedef unsigned long long ull;
 

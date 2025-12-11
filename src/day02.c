@@ -4,7 +4,7 @@
 
 #define BUFFER_SIZE         1024
 #define NUMBER_SIZE         32
-#define INPUT_FILE         "../Inputs/day2.txt"
+#define INPUT_FILE         "../Inputs/day02.txt"
 
 typedef unsigned long long ull;
 

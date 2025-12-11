@@ -4,7 +4,7 @@
 
 #define BUFFER_SIZE     256
 #define ALLOC_SIZE      8
-#define INPUT_FILE      "../Inputs/day4.txt"
+#define INPUT_FILE      "../Inputs/day04.txt"
 
 size_t get_roll_acess(char **roll_matrix, size_t m, size_t n)
 {

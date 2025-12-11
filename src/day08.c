@@ -4,7 +4,7 @@
 
 #define BUFFER_SIZE     64
 #define K_PAR           1000
-#define INPUT_FILE      "../Inputs/day8.txt"
+#define INPUT_FILE      "../Inputs/day08.txt"
 
 #define MIN(a, b)       ((a) < (b) ? (a) : (b))
 #define MAX(a, b)       ((a) > (b) ? (a) : (b))

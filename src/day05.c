@@ -3,7 +3,7 @@
 #include <string.h>
 
 #define BUFFER_SIZE         64
-#define INPUT_FILE          "../Inputs/day5.txt"
+#define INPUT_FILE          "../Inputs/day05.txt"
 
 #define MIN(a, b)           ((a) < (b) ? (a) : (b))
 #define MAX(a, b)           ((a) > (b) ? (a) : (b))

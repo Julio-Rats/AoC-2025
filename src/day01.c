@@ -4,7 +4,7 @@
 
 #define START_POSITION      50
 #define BUFFER_SIZE         16
-#define INPUT_FILE         "../Inputs/day1.txt"
+#define INPUT_FILE         "../Inputs/day01.txt"
 
 int main(int argc, char *argv[])
 {

@@ -5,7 +5,7 @@
 #define BUFFER_SIZE     4096
 #define MATRIX_LINES    5
 #define NUMBER_SIZE     9
-#define INPUT_FILE      "../Inputs/day6.txt"
+#define INPUT_FILE      "../Inputs/day06.txt"
 
 typedef unsigned long long ull;
 
