@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
         word final_led = make_leds(str + 1);
         str = strtok_r(NULL, "{", &save);
         buttons_t buttons = make_buttons(str);
-        str = strtok_r(NULL, "}", &save); // Parte 2
+        str = strtok_r(NULL, "}", &save); // Part 2
 
         word *parents = bfs_machine(buttons, final_led);
 
@@ -119,7 +119,7 @@ int main(int argc, char *argv[])
 
     }
 
-    printf("Total Moves: %zu\n", total_states_moved);
+    printf("[First answer] Total Moves: %zu\n", total_states_moved);
 
     fclose(file_in);
     return 0;
