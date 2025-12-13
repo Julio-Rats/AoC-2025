@@ -37,7 +37,7 @@ dist_t *merge_sorted(dist_t *a, dist_t *b)
     while (a && b)
     {
         if (a->distance <= b->distance)
-        { // <= mantém estabilidade
+        {
             p->next = a;
             a = a->next;
         }
@@ -110,14 +110,6 @@ inline void dsu_union(point_t *a, point_t *b)
         rb->parent = ra;
         ra->size  += rb->size;
     }
-}
-
-/* comparator */
-int cmp_dist(const void *A, const void *B)
-{
-    const dist_t *a = (dist_t *)A;
-    const dist_t *b = (dist_t *)B;
-    return (a->distance > b->distance) ? 1 : ((a->distance < b->distance) ? -1 : 0);
 }
 
 int main(int argc, char *argv[])
